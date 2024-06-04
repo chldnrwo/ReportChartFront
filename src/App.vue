@@ -1,29 +1,34 @@
 <template>
   <!--img alt="Vue logo" src="./assets/logo.png"-->
   <HelloWorld msg="Vue Test"/>
-  <div>
+  <div id="app">
+    <ChartComponent />
+  </div>
+  <!-- <div>
     <button class="btn btn-primary btn-sm" @click="toggleStocks">Magnificent 7 YOY</button>
   </div>
   <br>
     <AutoComplete @ticker-selected="handleCompanySelected" />
   <br>
     <StockDetails v-if="selectedTicker" :ticker="selectedTicker" :companyName="selectedCompanyName" />
-    <BarChart2 v-if="showStocks" />
+    <BarChart2 v-if="showStocks" /> -->
 </template>
 
 <script>
 import HelloWorld from './components/HelloWorld.vue';
-import BarChart2 from './components/BarChart2.vue';
-import AutoComplete from './components/AutoComplete.vue';
-import StockDetails from './components/StockDetails.vue';
+import ChartComponent from './components/ChartComponent.vue';
+// import BarChart2 from './components/BarChart2.vue';
+// import AutoComplete from './components/AutoComplete.vue';
+// import StockDetails from './components/StockDetails.vue';
 
 export default {
   name: 'App',
   components: {
     HelloWorld,
-    BarChart2,
-    AutoComplete,
-    StockDetails
+    ChartComponent,
+    // BarChart2,
+    // AutoComplete,
+    // StockDetails
   },
   data() {
     return {
