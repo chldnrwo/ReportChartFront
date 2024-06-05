@@ -1,10 +1,9 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>report chart test</p>
+    <h1 class="logo-text">{{ msg }}</h1>
+    <!-- <p>report chart test</p> -->
   </div>
 </template>
-
 
 <script>
 export default {
@@ -15,20 +14,16 @@ export default {
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+
+.logo-text {
+  font-family: 'Poppins', sans-serif;
+  font-size: 3rem; /* Adjust the size as needed */
+  color: #004a9f; /* Adjust the color as needed to match the logo */
 }
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+p {
+  font-size: 1rem; /* Adjust the size as needed */
+  color: #333; /* Adjust the color as needed */
 }
 </style>
