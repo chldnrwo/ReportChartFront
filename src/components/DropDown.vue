@@ -34,7 +34,7 @@
     <div v-if="chartsData.length > 0">
       <div v-for="chartData in chartsData" :key="chartData.title" class="chart-container">
         <h3>{{ chartData.title }}</h3>
-        <canvas :id="chartData.title"></canvas>
+        <canvas :id="chartData.title" width="1200" height="480"></canvas>
       </div>
     </div>
   </div>
@@ -44,6 +44,7 @@
 import axios from 'axios';
 import { Chart, registerables } from 'chart.js';
 import 'chartjs-adapter-date-fns';
+import { format } from 'date-fns';
 
 Chart.register(...registerables);
 
@@ -52,9 +53,9 @@ export default {
     return {
       groupNames: [],
       months: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'],
-      selectedGroupName: '', // 선택된 기관 이름을 저장할 변수
-      selectedMonth: '', // 선택된 월을 저장할 변수
-      chartsData: [] // 차트 데이터를 저장할 변수
+      selectedGroupName: '',
+      selectedMonth: '',
+      chartsData: []
     };
   },
   mounted() {
@@ -84,13 +85,12 @@ export default {
         return;
       }
 
-      // 백엔드로 POST 요청 보내기
       axios.post(`http://localhost:8080/datapoints/${this.selectedGroupName}/${this.selectedMonth}`)
         .then(response => {
           console.log('POST 요청 성공:', response.data);
-          this.chartsData = response.data; // 차트 데이터를 저장
+          this.chartsData = response.data;
           this.$nextTick(() => {
-            this.renderCharts(); // 차트 렌더링 함수 호출
+            this.renderCharts();
           });
         })
         .catch(error => {
@@ -100,23 +100,52 @@ export default {
     renderCharts() {
       this.chartsData.forEach(chartData => {
         const ctx = document.getElementById(chartData.title).getContext('2d');
+
+        // 데이터의 첫 번째와 마지막 날짜를 계산
+        const firstDate = new Date(chartData.data[0].column1);
+        const lastDate = new Date(chartData.data[chartData.data.length - 1].column1);
+
         new Chart(ctx, {
           type: 'line',
           data: {
-            labels: chartData.data.map(d => d.column1),
+            labels: chartData.data.map(d => format(new Date(d.column1), 'yyyy-MM-dd')),
             datasets: [{
               label: chartData.title,
               data: chartData.data.map(d => d.column2),
               borderColor: 'rgba(75, 192, 192, 1)',
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
               borderWidth: 1,
               radius: 0,
+              fill: true
             }]
           },
           options: {
+            responsive: true,
+            maintainAspectRatio: true,
             scales: {
+              x: {
+                type: 'time',
+                time: {
+                  unit: 'day',
+                  displayFormats: {
+                    day: 'MMM d'
+                  }
+                },
+                ticks: {
+                  autoSkip: false,
+                  callback: function(value, index, values) {
+                    const date = new Date(values[index].value);
+                    const day = date.getDate();
+                    if (date.getTime() === firstDate.getTime() || date.getTime() === lastDate.getTime() || day % 5 === 0) {
+                      return format(date, 'MMM d');
+                    }
+                    return null;
+                  }
+                }
+              },
               y: {
-                suggestedMin: -100,  // y축 최소값 추가
-                suggestedMax: 100    // y축 최대값 추가
+                suggestedMin: 0,
+                suggestedMax: 100
               }
             }
           }
@@ -145,7 +174,7 @@ export default {
   border: none;
   padding: 10px 20px;
   border-radius: 5px;
-  width: 250px; /* 버튼과 드롭다운의 너비를 동일하게 설정 */
+  width: 250px;
 }
 
 .custom-btn:hover {
@@ -153,7 +182,7 @@ export default {
 }
 
 .custom-dropdown-menu {
-  width: 250px; /* 버튼과 드롭다운의 너비를 동일하게 설정 */
+  width: 250px;
 }
 
 .selected-info {
