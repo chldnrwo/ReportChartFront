@@ -1,6 +1,6 @@
 <template>
   <img alt="Vue logo" src="./assets/img_ci_new.png">
-  <HelloWorld msg="Jeju Graph"/>
+  <HelloWorld msg="JEJU Graph"/>
   <div id="app">
     <DropDown />
     <br>

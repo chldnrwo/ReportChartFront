@@ -30,11 +30,22 @@
     </div>
     
     <button class="btn btn-success mt-3" @click="submitForm">제출</button>
+
+    <div v-if="chartsData.length > 0">
+      <div v-for="chartData in chartsData" :key="chartData.title" class="chart-container">
+        <h3>{{ chartData.title }}</h3>
+        <canvas :id="chartData.title"></canvas>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+import { Chart, registerables } from 'chart.js';
+import 'chartjs-adapter-date-fns';
+
+Chart.register(...registerables);
 
 export default {
   data() {
@@ -43,6 +54,7 @@ export default {
       months: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'],
       selectedGroupName: '', // 선택된 기관 이름을 저장할 변수
       selectedMonth: '', // 선택된 월을 저장할 변수
+      chartsData: [] // 차트 데이터를 저장할 변수
     };
   },
   mounted() {
@@ -76,12 +88,42 @@ export default {
       axios.post(`http://localhost:8080/datapoints/${this.selectedGroupName}/${this.selectedMonth}`)
         .then(response => {
           console.log('POST 요청 성공:', response.data);
+          this.chartsData = response.data; // 차트 데이터를 저장
+          this.$nextTick(() => {
+            this.renderCharts(); // 차트 렌더링 함수 호출
+          });
         })
         .catch(error => {
           console.error('POST 요청 실패:', error);
         });
     },
-  },
+    renderCharts() {
+      this.chartsData.forEach(chartData => {
+        const ctx = document.getElementById(chartData.title).getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: chartData.data.map(d => d.column1),
+            datasets: [{
+              label: chartData.title,
+              data: chartData.data.map(d => d.column2),
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1,
+              radius: 0,
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                suggestedMin: -100,  // y축 최소값 추가
+                suggestedMax: 100    // y축 최대값 추가
+              }
+            }
+          }
+        });
+      });
+    }
+  }
 };
 </script>
 
@@ -126,5 +168,9 @@ export default {
 
 .mt-1 {
   margin-top: 0.5rem;
+}
+
+.chart-container {
+  margin: 20px;
 }
 </style>
