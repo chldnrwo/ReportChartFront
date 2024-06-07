@@ -84,10 +84,19 @@ export default {
       axios.post(`http://localhost:8080/datapoints/${this.selectedGroupName}/${this.selectedMonth}`)
         .then(response => {
           console.log('POST 요청 성공:', response.data);
-          this.chartsData = response.data;
-          this.$nextTick(() => {
-            this.renderCharts();
-          });
+          if (Array.isArray(response.data)) {
+            console.log('받은 데이터:', response.data); // 데이터를 로그에 출력
+            if (response.data.length > 0 && typeof response.data[0].title === 'string' && Array.isArray(response.data[0].data)) {
+              this.chartsData = response.data;
+              this.$nextTick(() => {
+                this.renderCharts();
+              });
+            } else {
+              console.error('데이터 구조가 올바르지 않습니다:', response.data);
+            }
+          } else {
+            console.error('데이터 형식이 올바르지 않습니다:', response.data);
+          }
         })
         .catch(error => {
           console.error('POST 요청 실패:', error);
@@ -96,28 +105,52 @@ export default {
     renderCharts() {
       console.time('chartRenderTime');  // 시간 측정 시작
 
-      this.chartsData.forEach((chartData, index) => {
-        const worker = new Worker();
-        worker.postMessage({
-          index,
-          title: chartData.title,
-          data: JSON.parse(JSON.stringify(chartData.data))  // JSON 직렬화/역직렬화 사용
-        });
+      const chunkSize = 1000;  // 데이터 분할 크기
+      const totalChunks = Math.ceil(this.chartsData.length / chunkSize);
+      let processedChunks = 0;  // 처리된 청크 수
 
-        worker.onmessage = (event) => {
-          const { index, imageData } = event.data;
-          const canvas = document.getElementById(chartData.title);
-          const ctx = canvas.getContext('2d');
-          const img = new Image();
-          img.src = imageData;
-          img.onload = () => {
-            ctx.drawImage(img, 0, 0);
-            if (index === this.chartsData.length - 1) {
-              console.timeEnd('chartRenderTime');  // 시간 측정 종료
-            }
+      const renderChunk = (chunk, index) => {
+        chunk.forEach((chartData, chunkIndex) => {
+          const worker = new Worker();
+          
+          worker.postMessage({
+            index: index * chunkSize + chunkIndex,
+            title: chartData.title,
+            data: JSON.parse(JSON.stringify(chartData.data))  // JSON 직렬화/역직렬화 사용
+          });
+
+          worker.onmessage = (event) => {
+            const { index, imageData } = event.data;
+            const canvas = document.getElementById(chartData.title);
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.src = imageData;
+            img.onload = () => {
+              ctx.drawImage(img, 0, 0);
+              if (index === this.chartsData.length - 1) {
+                console.timeEnd('chartRenderTime');  // 시간 측정 종료
+              }
+            };
           };
-        };
-      });
+          
+          worker.onerror = (error) => {
+            console.error('Worker error:', error);
+          };
+        });
+      };
+
+      const processNextChunk = () => {
+        if (processedChunks < totalChunks) {
+          const start = processedChunks * chunkSize;
+          const end = start + chunkSize;
+          const chunk = this.chartsData.slice(start, end);
+          renderChunk(chunk, processedChunks);
+          processedChunks += 1;
+          setTimeout(processNextChunk, 0);  // 다음 청크를 처리
+        }
+      };
+
+      processNextChunk();
     }
   }
 };
@@ -170,4 +203,3 @@ export default {
   margin: 20px;
 }
 </style>
-

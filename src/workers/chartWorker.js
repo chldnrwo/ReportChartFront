@@ -53,6 +53,13 @@ self.onmessage = (event) => {
     const reader = new FileReader();
     reader.onload = () => {
       self.postMessage({ index, imageData: reader.result });
+
+      // Blob과 Reader 객체 메모리 해제
+      reader.onload = null;
+      blob = null;
+
+      // Worker 종료
+      self.close();
     };
     reader.readAsDataURL(blob);
   });
