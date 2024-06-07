@@ -42,11 +42,7 @@
 
 <script>
 import axios from 'axios';
-import { Chart, registerables } from 'chart.js';
-import 'chartjs-adapter-date-fns';
-import { format } from 'date-fns';
-
-Chart.register(...registerables);
+import Worker from 'worker-loader!../workers/chartWorker.js';  // worker-loader를 통해 워커를 가져옵니다.
 
 export default {
   data() {
@@ -98,58 +94,29 @@ export default {
         });
     },
     renderCharts() {
-      this.chartsData.forEach(chartData => {
-        const ctx = document.getElementById(chartData.title).getContext('2d');
+      console.time('chartRenderTime');  // 시간 측정 시작
 
-        // 데이터의 첫 번째와 마지막 날짜를 계산
-        const firstDate = new Date(chartData.data[0].column1);
-        const lastDate = new Date(chartData.data[chartData.data.length - 1].column1);
-
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: chartData.data.map(d => format(new Date(d.column1), 'yyyy-MM-dd')),
-            datasets: [{
-              label: chartData.title,
-              data: chartData.data.map(d => d.column2),
-              borderColor: 'rgba(75, 192, 192, 1)',
-              backgroundColor: 'rgba(75, 192, 192, 0.2)',
-              borderWidth: 1,
-              radius: 0,
-              fill: true
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-              x: {
-                type: 'time',
-                time: {
-                  unit: 'day',
-                  displayFormats: {
-                    day: 'MMM d'
-                  }
-                },
-                ticks: {
-                  autoSkip: false,
-                  callback: function(value, index, values) {
-                    const date = new Date(values[index].value);
-                    const day = date.getDate();
-                    if (date.getTime() === firstDate.getTime() || date.getTime() === lastDate.getTime() || day % 5 === 0) {
-                      return format(date, 'MMM d');
-                    }
-                    return null;
-                  }
-                }
-              },
-              y: {
-                suggestedMin: 0,
-                suggestedMax: 100
-              }
-            }
-          }
+      this.chartsData.forEach((chartData, index) => {
+        const worker = new Worker();
+        worker.postMessage({
+          index,
+          title: chartData.title,
+          data: JSON.parse(JSON.stringify(chartData.data))  // JSON 직렬화/역직렬화 사용
         });
+
+        worker.onmessage = (event) => {
+          const { index, imageData } = event.data;
+          const canvas = document.getElementById(chartData.title);
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+          img.src = imageData;
+          img.onload = () => {
+            ctx.drawImage(img, 0, 0);
+            if (index === this.chartsData.length - 1) {
+              console.timeEnd('chartRenderTime');  // 시간 측정 종료
+            }
+          };
+        };
       });
     }
   }
@@ -203,3 +170,4 @@ export default {
   margin: 20px;
 }
 </style>
+
