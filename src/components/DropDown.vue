@@ -34,7 +34,7 @@
     <div v-if="chartsData.length > 0">
       <div v-for="chartData in chartsData" :key="chartData.title" class="chart-container">
         <h3>{{ chartData.title }}</h3>
-        <canvas :id="chartData.title" width="1200" height="480"></canvas>
+        <img :src="chartData.imageUrl" :alt="chartData.title" v-if="chartData.imageUrl"/>
       </div>
     </div>
   </div>
@@ -51,11 +51,20 @@ export default {
       months: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'],
       selectedGroupName: '',
       selectedMonth: '',
-      chartsData: []
+      chartsData: [],
+      imageUrls: []  // 이미지 URL들을 저장할 배열
     };
   },
   mounted() {
     this.fetchGroupNames();
+  },
+  beforeMount() {
+    // 페이지가 로드될 때 서버에 있는 기존 이미지를 삭제
+    this.deleteExistingImages();
+  },
+  beforeUnmount() {  // beforeDestroy를 beforeUnmount로 변경
+    // 페이지를 벗어날 때 이미지 삭제 요청을 보냄
+    this.deleteExistingImages();
   },
   methods: {
     fetchGroupNames() {
@@ -120,17 +129,13 @@ export default {
           });
 
           worker.onmessage = (event) => {
-            const { index, imageData } = event.data;
-            const canvas = document.getElementById(chartData.title);
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            img.src = imageData;
-            img.onload = () => {
-              ctx.drawImage(img, 0, 0);
+              const { index, imageUrl } = event.data;
+              this.chartsData[index] = { ...this.chartsData[index], imageUrl: `http://localhost:8080${imageUrl}` };
+              this.imageUrls.push(imageUrl);  // 이미지 URL을 배열에 추가
+
               if (index === this.chartsData.length - 1) {
-                console.timeEnd('chartRenderTime');  // 시간 측정 종료
+                  console.timeEnd('chartRenderTime');  // 시간 측정 종료
               }
-            };
           };
           
           worker.onerror = (error) => {
@@ -151,6 +156,17 @@ export default {
       };
 
       processNextChunk();
+    },
+    deleteExistingImages() {
+      this.imageUrls.forEach(url => {
+        axios.delete(`http://localhost:8080/upload`, { params: { url } })
+          .then(() => {
+            console.log('이미지 삭제 성공:', url);
+          })
+          .catch(error => {
+            console.error('이미지 삭제 실패:', url, error);
+          });
+      });
     }
   }
 };
@@ -201,5 +217,10 @@ export default {
 
 .chart-container {
   margin: 20px;
+}
+
+.chart-container img {
+  width: 1200px;
+  height: 480px;
 }
 </style>

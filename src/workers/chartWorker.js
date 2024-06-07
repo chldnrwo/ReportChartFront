@@ -1,13 +1,9 @@
-// src/workers/chartWorker.js
-
-// Web Worker 환경에서 Chart.js 및 date-fns 어댑터 로드
 self.importScripts('https://cdn.jsdelivr.net/npm/chart.js');
 self.importScripts('https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns');
 
-// self.Chart를 명시적으로 설정
-const { Chart } = self;
+const Chart = self.Chart;
 
-self.onmessage = (event) => {
+self.onmessage = async (event) => {
   const { index, title, data } = event.data;
 
   const canvas = new OffscreenCanvas(1200, 480);
@@ -48,19 +44,24 @@ self.onmessage = (event) => {
     }
   });
 
-  // 결과를 이미지 데이터로 전송
-  canvas.convertToBlob().then(blob => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      self.postMessage({ index, imageData: reader.result });
+  const blob = await canvas.convertToBlob();
+  const formData = new FormData();
+  const fileName = `chart_${index}_${Date.now()}.png`; // 고유한 파일 이름 생성
+  formData.append('image', blob, fileName);
 
-      // Blob과 Reader 객체 메모리 해제
-      reader.onload = null;
-      blob = null;
-
-      // Worker 종료
-      self.close();
-    };
-    reader.readAsDataURL(blob);
+  const response = await fetch('http://localhost:8080/upload', {
+    method: 'POST',
+    body: formData
   });
+
+  if (response.ok) {
+    const result = await response.json();
+    const imageUrl = result.url;
+    self.postMessage({ index, imageUrl });
+  } else {
+    console.error('Image upload failed', response.statusText);
+  }
+
+  canvas.width = 0;
+  canvas.height = 0;
 };
