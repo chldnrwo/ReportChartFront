@@ -63,7 +63,7 @@ export default {
       selectedGroupName: '',
       selectedMonth: '',
       chartsData: [],
-      currentPage: 1,
+      currentPage: 0,
       totalPages: 0,
       pageSize: 150  // 한 페이지에 표시할 hostid 종류 수
     };
