@@ -1,41 +1,46 @@
 <template>
   <div class="form-container">
-    <div class="dropdown">
-      <button class="btn btn-primary custom-btn dropdown-toggle" type="button" id="dropdownGroupButton" data-bs-toggle="dropdown" aria-expanded="false">
-        기관 이름
-      </button>
-      <ul class="dropdown-menu custom-dropdown-menu" aria-labelledby="dropdownGroupButton">
-        <li v-for="group in groupNames" :key="group.groupName">
-          <a class="dropdown-item" href="#" @click="selectGroupName(group.groupName)">{{ group.groupName }}</a>
-        </li>
-      </ul>
+    <div>
+      <div class="dropdown">
+        <button class="btn btn-primary custom-btn dropdown-toggle" type="button" id="dropdownGroupButton" data-bs-toggle="dropdown" aria-expanded="false">
+          기관 이름
+        </button>
+        <ul class="dropdown-menu custom-dropdown-menu" aria-labelledby="dropdownGroupButton">
+          <li v-for="group in groupNames" :key="group.groupName">
+            <a class="dropdown-item" href="#" @click="selectGroupName(group.groupName)">{{ group.groupName }}</a>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="dropdown mt-3">
+        <button class="btn btn-primary custom-btn dropdown-toggle" type="button" id="dropdownMonthButton" data-bs-toggle="dropdown" aria-expanded="false">
+          선택된 월
+        </button>
+        <ul class="dropdown-menu custom-dropdown-menu" aria-labelledby="dropdownMonthButton">
+          <li v-for="month in months" :key="month">
+            <a class="dropdown-item" href="#" @click="selectMonth(month)">{{ month }}</a>
+          </li>
+        </ul>
+      </div>
+      
+      <div v-if="selectedGroupName" class="selected-info mt-3">
+        선택된 기관: {{ selectedGroupName }}
+      </div>
+      <div v-if="selectedMonth" class="selected-info mt-1">
+        선택된 월: {{ selectedMonth }}
+      </div>
+      
+      <button class="btn btn-success mt-3" @click="submitForm">제출</button>
     </div>
-    
-    <div class="dropdown mt-3">
-      <button class="btn btn-primary custom-btn dropdown-toggle" type="button" id="dropdownMonthButton" data-bs-toggle="dropdown" aria-expanded="false">
-        선택된 월
-      </button>
-      <ul class="dropdown-menu custom-dropdown-menu" aria-labelledby="dropdownMonthButton">
-        <li v-for="month in months" :key="month">
-          <a class="dropdown-item" href="#" @click="selectMonth(month)">{{ month }}</a>
-        </li>
-      </ul>
-    </div>
-    
-    <div v-if="selectedGroupName" class="selected-info mt-3">
-      선택된 기관: {{ selectedGroupName }}
-    </div>
-    <div v-if="selectedMonth" class="selected-info mt-1">
-      선택된 월: {{ selectedMonth }}
-    </div>
-    
-    <button class="btn btn-success mt-3" @click="submitForm">제출</button>
+    <br><br><br><br><br><br><br><br><br>
 
     <div v-if="chartsData.length > 0">
       <div v-for="chartData in chartsData" :key="chartData.title" class="chart-container">
         <h3>{{ chartData.title }}</h3>
-        <canvas :id="chartData.title" width="1200" height="480"></canvas>
+        <canvas :id="chartData.title" width="1200" height="709"></canvas>
+        <br>
       </div>
+      
     </div>
 
     <div v-if="totalPages > 1" class="pagination">
@@ -58,9 +63,9 @@ export default {
       selectedGroupName: '',
       selectedMonth: '',
       chartsData: [],
-      currentPage: 0,
+      currentPage: 1,
       totalPages: 0,
-      pageSize: 33
+      pageSize: 150  // 한 페이지에 표시할 hostid 종류 수
     };
   },
   mounted() {
@@ -90,7 +95,10 @@ export default {
         return;
       }
 
-      axios.post(`http://localhost:8080/datapoints/${this.selectedGroupName}/${this.selectedMonth}?page=${this.currentPage}&size=${this.pageSize}`)
+      this.fetchData(this.currentPage);
+    },
+    fetchData(page) {
+      axios.post(`http://localhost:8080/datapoints/${this.selectedGroupName}/${this.selectedMonth}?page=${page}&size=${this.pageSize}`)
         .then(response => {
           console.log('POST 요청 성공:', response.data);
           if (response.data.data && Array.isArray(response.data.data)) {
@@ -161,13 +169,13 @@ export default {
     nextPage() {
       if (this.currentPage < this.totalPages - 1) {
         this.currentPage++;
-        this.submitForm();
+        this.fetchData(this.currentPage);
       }
     },
     prevPage() {
       if (this.currentPage > 0) {
         this.currentPage--;
-        this.submitForm();
+        this.fetchData(this.currentPage);
       }
     }
   }
