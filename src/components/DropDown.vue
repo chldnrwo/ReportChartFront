@@ -37,12 +37,18 @@
         <canvas :id="chartData.title" width="1200" height="480"></canvas>
       </div>
     </div>
+
+    <div v-if="totalPages > 1" class="pagination">
+      <button @click="prevPage" :disabled="currentPage === 0">Previous</button>
+      <span>{{ currentPage + 1 }} / {{ totalPages }}</span>
+      <button @click="nextPage" :disabled="currentPage === totalPages - 1">Next</button>
+    </div>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
-import Worker from 'worker-loader!../workers/chartWorker.js';  // worker-loader를 통해 워커를 가져옵니다.
+import Worker from 'worker-loader!../workers/chartWorker.js';
 
 export default {
   data() {
@@ -51,7 +57,10 @@ export default {
       months: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'],
       selectedGroupName: '',
       selectedMonth: '',
-      chartsData: []
+      chartsData: [],
+      currentPage: 0,
+      totalPages: 0,
+      pageSize: 33
     };
   },
   mounted() {
@@ -81,19 +90,16 @@ export default {
         return;
       }
 
-      axios.post(`http://localhost:8080/datapoints/${this.selectedGroupName}/${this.selectedMonth}`)
+      axios.post(`http://localhost:8080/datapoints/${this.selectedGroupName}/${this.selectedMonth}?page=${this.currentPage}&size=${this.pageSize}`)
         .then(response => {
           console.log('POST 요청 성공:', response.data);
-          if (Array.isArray(response.data)) {
-            console.log('받은 데이터:', response.data); // 데이터를 로그에 출력
-            if (response.data.length > 0 && typeof response.data[0].title === 'string' && Array.isArray(response.data[0].data)) {
-              this.chartsData = response.data;
-              this.$nextTick(() => {
-                this.renderCharts();
-              });
-            } else {
-              console.error('데이터 구조가 올바르지 않습니다:', response.data);
-            }
+          if (response.data.data && Array.isArray(response.data.data)) {
+            this.chartsData = response.data.data;
+            this.currentPage = response.data.currentPage;
+            this.totalPages = response.data.totalPages;
+            this.$nextTick(() => {
+              this.renderCharts();
+            });
           } else {
             console.error('데이터 형식이 올바르지 않습니다:', response.data);
           }
@@ -151,6 +157,18 @@ export default {
       };
 
       processNextChunk();
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages - 1) {
+        this.currentPage++;
+        this.submitForm();
+      }
+    },
+    prevPage() {
+      if (this.currentPage > 0) {
+        this.currentPage--;
+        this.submitForm();
+      }
     }
   }
 };
@@ -201,5 +219,13 @@ export default {
 
 .chart-container {
   margin: 20px;
+}
+
+.pagination {
+  margin-top: 20px;
+}
+
+.pagination button {
+  margin: 0 5px;
 }
 </style>
