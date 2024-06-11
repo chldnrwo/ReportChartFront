@@ -32,13 +32,27 @@
       
       <button class="btn btn-success mt-3" @click="submitForm">제출</button>
     </div>
-    <br><br><br><br><br><br><br><br><br>
+    <br><br><br><br><br>
 
     <div v-if="chartsData.length > 0">
       <div v-for="chartData in chartsData" :key="chartData.title" class="chart-container">
-        <h3 class="selected-info" >{{ chartData.title }}</h3>
-        <canvas class="selected-info" :id="chartData.title" width="1200" height="709"></canvas>
-        <br>
+        <p style="line-height: 1.5;"> &nbsp;  </p>
+        <h5 class="selected-info align-left" >{{ chartData.title }}</h5>
+        <p class="selected-info align-left"  >Host : {{ chartData.host }}</p>
+        <canvas class="selected-info" :id="chartData.title" width="1000" height="520"></canvas>
+    
+        <div class="container mt-4">
+          <div class="row">
+            <div class="col-4 border headGraph">MIN</div>
+            <div class="col-4 border headGraph">MAX</div>
+            <div class="col-4 border headGraph">AVG</div>
+          </div>
+          <div class="row">
+            <div class="col-4 border tailGraph">최소값</div>
+            <div class="col-4 border tailGraph">최대값</div>
+            <div class="col-4 border tailGraph">평균값</div>
+          </div>
+        </div>
       </div>
       
     </div>
@@ -130,12 +144,14 @@ export default {
           worker.postMessage({
             index: index * chunkSize + chunkIndex,
             title: chartData.title,
+            host: chartData.host,
             data: JSON.parse(JSON.stringify(chartData.data))  // JSON 직렬화/역직렬화 사용
           });
 
           worker.onmessage = (event) => {
             const { index, imageData } = event.data;
             const canvas = document.getElementById(chartData.title);
+            
             const ctx = canvas.getContext('2d');
             const img = new Image();
             img.src = imageData;
@@ -236,5 +252,16 @@ export default {
 
 .pagination button {
   margin: 0 5px;
+}
+.align-left {
+  text-align: left;
+  /* margin-left: 0; */
+}
+.headGraph{
+  background-color: #003b7a;
+  color: aliceblue;
+}
+.tailGraph{
+  background-color: white;
 }
 </style>

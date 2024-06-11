@@ -10,7 +10,7 @@ const { Chart } = self;
 self.onmessage = (event) => {
   const { index, title, data } = event.data;
 
-  const canvas = new OffscreenCanvas(1200, 709);
+  const canvas = new OffscreenCanvas(1000, 520);
   const context = canvas.getContext('2d');
 
   new Chart(context, {
