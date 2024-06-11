@@ -36,8 +36,8 @@
 
     <div v-if="chartsData.length > 0">
       <div v-for="chartData in chartsData" :key="chartData.title" class="chart-container">
-        <h3>{{ chartData.title }}</h3>
-        <canvas :id="chartData.title" width="1200" height="709"></canvas>
+        <h3 class="selected-info" >{{ chartData.title }}</h3>
+        <canvas class="selected-info" :id="chartData.title" width="1200" height="709"></canvas>
         <br>
       </div>
       
@@ -183,18 +183,19 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
 
 .form-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-top: 20px;
+  font-family: 'Noto Sans KR', sans-serif; /* 본고딕 폰트 적용 */
 }
 
 .custom-btn {
   background-color: #004a9f;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Noto Sans KR', sans-serif; /* 본고딕 폰트 적용 */
   font-weight: 700;
   color: white;
   border: none;
@@ -212,7 +213,7 @@ export default {
 }
 
 .selected-info {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Noto Sans KR', sans-serif; /* 본고딕 폰트 적용 */
   font-weight: 700;
   color: #004a9f;
 }
