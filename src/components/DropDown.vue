@@ -32,7 +32,7 @@
       
       <button class="btn btn-success mt-3" @click="submitForm">제출</button>
     </div>
-    <br><br><br><br><br>
+    <br><br><br><br>
 
     <div v-if="chartsData.length > 0">
       <div v-for="chartData in chartsData" :key="chartData.title" class="chart-container">

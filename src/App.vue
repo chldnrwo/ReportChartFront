@@ -1,25 +1,37 @@
 <template>
-  <img alt="Vue logo" src="./assets/img_ci_new.png">
-  <HelloWorld msg="JEJU Graph"/>
   <div id="app">
-    <DropDown />
+    <LockSlider :value="isLocked" @update:isLocked="isLocked = $event" />
     <br>
-    <!-- <ChartComponent /> -->
+    <img alt="Vue logo" src="./assets/img_ci_new.png">
+    <HelloWorld msg="JEJU Graph"/>
+    <br>
+    <div>
+      <DropDown v-if="!isLocked" />
+      <DropAuto v-if="isLocked" />
+      <br>
+    </div>
   </div>
 </template>
 
 <script>
 import HelloWorld from './components/HelloWorld.vue';
-//import ChartComponent from './components/ChartComponent.vue';
 import DropDown from './components/DropDown.vue';
+import DropAuto from './components/DropAuto.vue';
+import LockSlider from './components/LockSlider.vue';
 
 export default {
   name: 'App',
   components: {
     HelloWorld,
-    //ChartComponent,
     DropDown,
+    DropAuto,
+    LockSlider,
   },
+  data() {
+    return {
+      isLocked: true
+    };
+  }
 };
 </script>
 
@@ -30,6 +42,6 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 10px;
 }
 </style>
