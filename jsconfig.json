@@ -15,5 +15,9 @@
       "dom.iterable",
       "scripthost"
     ]
-  }
+  },
+  "include": [
+    "src/**/*",
+    "server.js"
+  ]
 }
