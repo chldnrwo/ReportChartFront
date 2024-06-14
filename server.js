@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const chartGenerator = require('./chartGenerator'); // chartGenerator 모듈 가져오기
 const app = express();
 const port = 3000;
 
@@ -10,33 +11,43 @@ const corsOptions = {
   optionsSuccessStatus: 204
 };
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
 app.use(cors(corsOptions));
 
-app.post('/api/receive-data', (req, res) => {
-    const { groupName, month, page, size } = req.body;
-    console.log(`Received data: groupName=${groupName}, month=${month}, page=${page}, size=${size}`);
-    app.locals.groupName = groupName;
-    app.locals.month = month;
-    app.locals.page = page;
-    app.locals.size = size;
-    res.status(200).send({ groupName, month, page, size });
+app.post('/api/receive-data', async (req, res) => {
+  const data = req.body;
+  console.log('Received data:', data);
+
+  if (data && data.data) {
+    app.locals.receivedData = data;
+
+    try {
+      // 데이터 병렬 처리
+      await Promise.all(data.data.map(async (item) => {
+        await chartGenerator.generateChart(item);
+      }));
+
+      // 데이터 처리 후 메모리 해제
+      app.locals.receivedData = null;
+      res.status(200).send('Data processed and charts generated successfully');
+    } catch (error) {
+      console.error('Error processing data:', error);
+      res.status(500).send('Error processing data');
+    }
+  } else {
+    res.status(400).send('Invalid data');
+  }
 });
 
 app.get('/api/get-received-data', (req, res) => {
-    const groupName = app.locals.groupName;
-    const month = app.locals.month;
-    const page = app.locals.page;
-    const size = app.locals.size;
-    if (groupName && month && page !== undefined && size !== undefined) {
-        console.log(`Sending data to Vue: groupName=${groupName}, month=${month}, page=${page}, size=${size}`);
-        res.status(200).send({ groupName, month, page, size });
-    } else {
-        console.log('No data found');
-        res.status(404).send('No data found');
-    }
+  const data = app.locals.receivedData;
+  if (data) {
+    res.status(200).json(data);
+  } else {
+    res.status(404).send('No data found');
+  }
 });
 
 app.listen(port, () => {
-    console.log(`Express server running at http://localhost:${port}/`);
+  console.log(`Express server running at http://localhost:${port}/`);
 });
