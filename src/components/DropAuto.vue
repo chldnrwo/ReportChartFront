@@ -35,22 +35,34 @@
     <br><br><br><br><br>
 
     <div v-if="chartsData.length > 0">
-      <div v-for="chartData in chartsData" :key="chartData.tbName" class="chart-container">
-        <canvas class="selected-info" :id="chartData.tbName" width="1000" height="520"></canvas>
+      <div v-for="chartData in chartsData" :key="chartData.title" class="chart-container">
+        <p style="line-height: 1.5;"> &nbsp;  </p>
+        <h5 class="selected-info align-left" >{{ chartData.title }}</h5>
+        <p class="selected-info align-left"  >Host : {{ chartData.host }}</p>
+        <!-- <canvas class="selected-info" :id="chartData.title" width="1000" height="520"></canvas> -->
+        <div class="selected-info" :id="chartData.title" style="background-color: orange;" width="1000" height="520"></div>
+        <div class="container mt-4">
+          <div class="row">
+            <div class="col-4 border headGraph">MIN</div>
+            <div class="col-4 border headGraph">MAX</div>
+            <div class="col-4 border headGraph">AVG</div>
+          </div>
+          <div class="row">
+            <div class="col-4 border tailGraph">최소값</div>
+            <div class="col-4 border tailGraph">최대값</div>
+            <div class="col-4 border tailGraph">평균값</div>
+          </div>
+        </div>
       </div>
+      
     </div>
 
-    <div v-if="totalPages > 1" class="pagination">
-      <button @click="prevPage" :disabled="currentPage === 0">Previous</button>
-      <span>{{ currentPage + 1 }} / {{ totalPages }}</span>
-      <button @click="nextPage" :disabled="currentPage === totalPages - 1">Next</button>
-    </div>
+   
   </div>
 </template>
 
 <script>
 import axios from 'axios';
-import Worker from 'worker-loader!../workers/chartWorker.js';
 
 export default {
     data() {
@@ -69,8 +81,8 @@ export default {
     mounted() {
         console.log('DropAuto component mounted');
         this.fetchGroupNames();
-        this.setupAutoFetch(); // 컴포넌트가 마운트될 때 자동 데이터 가져오기 설정을 실행
-        this.startAutoFetch(); // 주기적으로 데이터 가져오기를 시작합니다.
+        
+        
     },
     beforeUnmount() {
         // 컴포넌트가 파괴되기 전에 타이머를 정리합니다.
@@ -108,11 +120,6 @@ export default {
                     console.log('POST 요청 성공:', response.data);
                     if (response.data.data && Array.isArray(response.data.data)) {
                         this.chartsData = response.data.data;
-                        this.currentPage = response.data.currentPage;
-                        this.totalPages = response.data.totalPages;
-                        this.$nextTick(() => {
-                            this.renderCharts();
-                        });
                     } else {
                         console.error('데이터 형식이 올바르지 않습니다:', response.data);
                     }
@@ -121,101 +128,6 @@ export default {
                     console.error('POST 요청 실패:', error);
                 });
         },
-        renderCharts() {
-            console.time('chartRenderTime');
-            console.log('Rendering charts with data:', this.chartsData);
-
-            const chunkSize = 1000;
-            const totalChunks = Math.ceil(this.chartsData.length / chunkSize);
-            let processedChunks = 0;
-
-            const renderChunk = (chunk, index) => {
-                chunk.forEach((chartData, chunkIndex) => {
-                    console.log('chartData:', chartData);
-                    const worker = new Worker();
-                    
-                    worker.postMessage({
-                        index: index * chunkSize + chunkIndex,
-                        title: chartData.title,
-                        host: chartData.host,
-                        data: JSON.parse(JSON.stringify(chartData.data))
-                    });
-
-                    worker.onmessage = (event) => {
-                        const { imageData } = event.data;
-                        this.sendDataToBackend(chartData.host, imageData, chartData.tbname);
-                    };
-                    
-                    worker.onerror = (error) => {
-                        console.error('Worker error:', error);
-                    };
-                });
-            };
-
-            const processNextChunk = () => {
-                if (processedChunks < totalChunks) {
-                    const start = processedChunks * chunkSize;
-                    const end = start + chunkSize;
-                    const chunk = this.chartsData.slice(start, end);
-                    renderChunk(chunk, processedChunks);
-                    processedChunks += 1;
-                    setTimeout(processNextChunk, 0);
-                }
-            };
-
-            processNextChunk();
-        },
-        sendDataToBackend(host, imageData, tbname) {
-            const payload = {
-                host,
-                imageData,
-                month: this.selectedMonth,
-                groupName: this.selectedGroupName,
-                tbname
-            };
-
-            console.log('Sending data to backend:', payload);
-
-            axios.post('http://localhost:8080/upload-image', payload)
-                .then(response => {
-                    console.log('이미지 업로드 성공:', response.data);
-                })
-                .catch(error => {
-                    console.error('이미지 업로드 실패:', error);
-                });
-        },
-        nextPage() {
-            if (this.currentPage < this.totalPages - 1) {
-                this.currentPage++;
-                this.fetchData(this.currentPage);
-            }
-        },
-        prevPage() {
-            if (this.currentPage > 0) {
-                this.currentPage--;
-                this.fetchData(this.currentPage);
-            }
-        },
-        setupAutoFetch() {
-            console.log('setupAutoFetch called');
-            axios.get('http://localhost:3000/api/get-received-data')
-                .then(response => {
-                    console.log('Received data from backend:', response.data);
-                    const { groupName, month, page, size } = response.data;
-                    this.selectedGroupName = groupName;
-                    this.selectedMonth = month;
-                    this.currentPage = page;
-                    this.pageSize = size;
-                    this.submitForm();
-                })
-                .catch(error => {
-                    console.error('Error fetching auto data:', error);
-                });
-        },
-        startAutoFetch() {
-            // 주기적으로 setupAutoFetch를 호출합니다.
-            this.timer = setInterval(this.setupAutoFetch, 60000); // 1분마다 호출
-        }
     }
 };
 </script>
