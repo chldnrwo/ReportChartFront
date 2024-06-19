@@ -6,6 +6,7 @@ self.importScripts('https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns');
 
 // self.Chart를 명시적으로 설정
 const { Chart } = self;
+//const { parseISO, format } = require('date-fns');
 
 self.onmessage = (event) => {
   const { index, title, data } = event.data;
@@ -16,6 +17,7 @@ self.onmessage = (event) => {
   new Chart(context, {
     type: 'line',
     data: {
+      //labels: data.map(d => format(parseISO(d.column1), 'yyyy-MM-dd HH:mm')),
       labels: data.map(d => d.column1),
       datasets: [{
         label: title,

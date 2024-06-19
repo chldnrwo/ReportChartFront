@@ -14,6 +14,9 @@ const corsOptions = {
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(cors(corsOptions));
 
+// 정적 파일 제공
+app.use('/images', express.static('C:/upload'));
+
 app.post('/api/receive-data', async (req, res) => {
   const data = req.body;
   console.log('Received data:', data);

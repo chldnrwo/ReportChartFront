@@ -48,9 +48,9 @@
             <div class="col-4 border headGraph">AVG</div>
           </div>
           <div class="row">
-            <div class="col-4 border tailGraph">최소값</div>
-            <div class="col-4 border tailGraph">최대값</div>
-            <div class="col-4 border tailGraph">평균값</div>
+            <div class="col-4 border tailGraph">{{ chartData.min }}</div>
+            <div class="col-4 border tailGraph">{{ chartData.max }}</div>
+            <div class="col-4 border tailGraph">{{ chartData.avg }}</div>
           </div>
         </div>
       </div>
@@ -145,6 +145,9 @@ export default {
             index: index * chunkSize + chunkIndex,
             title: chartData.title,
             host: chartData.host,
+            // min: chartData.min,
+            // max: chartData.max,
+            // avg: chartData.avg,
             data: JSON.parse(JSON.stringify(chartData.data))  // JSON 직렬화/역직렬화 사용
           });
 

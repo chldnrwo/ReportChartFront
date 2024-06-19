@@ -39,8 +39,15 @@
         <p style="line-height: 1.5;"> &nbsp;  </p>
         <h5 class="selected-info align-left" >{{ chartData.title }}</h5>
         <p class="selected-info align-left"  >Host : {{ chartData.host }}</p>
-        <!-- <canvas class="selected-info" :id="chartData.title" width="1000" height="520"></canvas> -->
-        <div class="selected-info" :id="chartData.title" style="background-color: orange;" width="1000" height="520"></div>
+        <img 
+          class="selected-info" 
+          :id="chartData.title" 
+          :src="getImagePath(chartData)" 
+          alt="Chart Image" 
+          width="1000" 
+          height="520" 
+          
+        />
         <div class="container mt-4">
           <div class="row">
             <div class="col-4 border headGraph">MIN</div>
@@ -48,13 +55,12 @@
             <div class="col-4 border headGraph">AVG</div>
           </div>
           <div class="row">
-            <div class="col-4 border tailGraph">최소값</div>
-            <div class="col-4 border tailGraph">최대값</div>
-            <div class="col-4 border tailGraph">평균값</div>
+            <div class="col-4 border tailGraph">{{ chartData.min }}</div>
+            <div class="col-4 border tailGraph">{{ chartData.max }}</div>
+            <div class="col-4 border tailGraph">{{ chartData.avg }}</div>
           </div>
         </div>
       </div>
-      
     </div>
 
    
@@ -74,7 +80,7 @@ export default {
             chartsData: [],
             currentPage: 0,
             totalPages: 0,
-            pageSize: 150,
+            pageSize: 99999,
             timer: null // 타이머를 추가합니다.
         };
     },
@@ -128,6 +134,9 @@ export default {
                     console.error('POST 요청 실패:', error);
                 });
         },
+        getImagePath(chartData) {
+          return `http://localhost:3000/images/${chartData.yearMonth}/${chartData.groupName}/${chartData.tbname}.png`;
+        }
     }
 };
 </script>

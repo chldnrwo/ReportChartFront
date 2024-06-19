@@ -11,7 +11,8 @@ async function generateChart(data) {
   const configuration = {
     type: 'line',
     data: {
-      labels: data.data.map(d => moment(d.column1)), // moment.js를 사용하여 날짜를 포맷합니다.
+      labels: data.data.map(d => moment(d.column1).format('YYYY-MM-DD HH:mm')),
+      //labels: data.data.map(d => moment(d.column1)), // moment.js를 사용하여 날짜를 포맷합니다.
       datasets: [{
         label: data.title,
         data: data.data.map(d => d.column2),
@@ -30,31 +31,23 @@ async function generateChart(data) {
           type: 'time',
           time: {
             unit: 'day',
-            tooltipFormat: 'll',
+            //tooltipFormat: 'll',
             displayFormats: {
               day: 'MMM D'
             }
           },
-          scaleLabel: {
-            display: true,
-            labelString: 'Date'
-          }
         }],
         yAxes: [{
           ticks: {
             min: 0,
             max: 100
           },
-          scaleLabel: {
-            display: true,
-            labelString: 'Percentage'
-          }
         }]
       },
-      legend: {
-        display: true,
-        position: 'top'
-      }
+      // legend: {
+      //   display: true,
+      //   position: 'top'
+      // }
     }
   };
 
