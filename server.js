@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const path = require('path');
 const chartGenerator = require('./chartGenerator'); // chartGenerator 모듈 가져오기
 const app = express();
 const port = 3000;
@@ -14,8 +15,16 @@ const corsOptions = {
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(cors(corsOptions));
 
+// 운영체제에 따른 기본 디렉토리 설정
+let baseDir;
+if (process.platform === 'win32') {
+  baseDir = path.join('C:', 'upload');
+} else {
+  baseDir = path.join('/var', 'www', 'upload');
+}
+
 // 정적 파일 제공
-app.use('/images', express.static('C:/upload'));
+app.use('/images', express.static(baseDir));
 
 app.post('/api/receive-data', async (req, res) => {
   const data = req.body;

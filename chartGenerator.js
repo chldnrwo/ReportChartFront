@@ -12,7 +12,6 @@ async function generateChart(data) {
     type: 'line',
     data: {
       labels: data.data.map(d => moment(d.column1).format('YYYY-MM-DD HH:mm')),
-      //labels: data.data.map(d => moment(d.column1)), // moment.js를 사용하여 날짜를 포맷합니다.
       datasets: [{
         label: data.title,
         data: data.data.map(d => d.column2),
@@ -31,7 +30,6 @@ async function generateChart(data) {
           type: 'time',
           time: {
             unit: 'day',
-            //tooltipFormat: 'll',
             displayFormats: {
               day: 'MMM D'
             }
@@ -44,15 +42,20 @@ async function generateChart(data) {
           },
         }]
       },
-      // legend: {
-      //   display: true,
-      //   position: 'top'
-      // }
     }
   };
 
   const imageBuffer = await chartJSNodeCanvas.renderToBuffer(configuration);
-  const dir = path.join('C:', 'upload', `2024${data.month}`, data.groupName);
+
+  // 운영체제에 따른 디렉토리 설정
+  let baseDir;
+  if (process.platform === 'win32') {
+    baseDir = path.join('C:', 'upload');
+  } else {
+    baseDir = path.join('/var', 'www', 'upload');
+  }
+
+  const dir = path.join(baseDir, `2024${data.month}`, data.groupName);
   await fs.mkdir(dir, { recursive: true });
 
   const filePath = path.join(dir, `${data.tbname}.png`);

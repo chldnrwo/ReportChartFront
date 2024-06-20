@@ -32,7 +32,7 @@
       
       <button class="btn btn-success mt-3" @click="submitForm">제출</button>
     </div>
-    <br><br><br><br><br>
+    <br><br><br><br>
 
     <div v-if="chartsData.length > 0">
       <div v-for="chartData in chartsData" :key="chartData.title" class="chart-container">
@@ -96,13 +96,18 @@ export default {
     },
     methods: {
         fetchGroupNames() {
-            axios.get('http://localhost:8080/datapoints/group-names')
-                .then(response => {
-                    this.groupNames = response.data;
-                })
-                .catch(error => {
-                    console.error('Error fetching group names:', error);
-                });
+          axios.get('http://localhost:8080/datapoints/group-names', {
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+              }
+          })
+          .then(response => {
+              this.groupNames = response.data;
+          })
+          .catch(error => {
+              console.error('Error fetching group names:', error);
+          });
         },
         selectGroupName(groupName) {
             this.selectedGroupName = groupName;
