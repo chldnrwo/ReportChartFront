@@ -31,13 +31,7 @@ pipeline {
                         bat """
                             echo y | plink -batch -hostkey "ssh-ed25519 255 SHA256:1LoBJZmd4BE4yVnKyTnyCouxLvCe+owiYFVxBoGQDtg" -pw %SSH_PASSWORD% %SSH_USER%@192.168.110.115 exit
                             pscp -batch -hostkey "ssh-ed25519 255 SHA256:1LoBJZmd4BE4yVnKyTnyCouxLvCe+owiYFVxBoGQDtg" -pw %SSH_PASSWORD% -r dist/* %SSH_USER%@192.168.110.115:/project/vue-app/
-                            plink -batch -hostkey "ssh-ed25519 255 SHA256:1LoBJZmd4BE4yVnKyTnyCouxLvCe+owiYFVxBoGQDtg" -pw %SSH_PASSWORD% %SSH_USER%@192.168.110.115 "
-                                cd /project/vue-app && 
-                                sudo docker build -t my-vue-app . && 
-                                sudo docker stop vue-app || true && 
-                                sudo docker rm vue-app || true && 
-                                sudo docker run -d --name vue-app --network my-network -p 8081:80 my-vue-app
-                            "
+                            plink -batch -hostkey "ssh-ed25519 255 SHA256:1LoBJZmd4BE4yVnKyTnyCouxLvCe+owiYFVxBoGQDtg" -pw %SSH_PASSWORD% %SSH_USER%@192.168.110.115 "cd /project/vue-app && sudo docker build -t my-vue-app . && sudo docker stop vue-app || true && sudo docker rm vue-app || true && sudo docker run -d --name vue-app --network my-network -p 8081:80 my-vue-app"
                         """
                     }
                 }
