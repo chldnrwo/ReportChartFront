@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        NODE_VERSION = '20.13.1'
+        DEPLOY_SERVER = '192.168.110.115' // 목적지 IP 주소
+        SSH_USER = 'root'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -22,9 +28,9 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sshagent(['ssh-credentials-id']) {
-                    bat 'scp -r dist/* root@cdcdev09:/project/vue-app/'
-                }
+                bat """
+                    pscp -pw "your_password" -r dist/* ${SSH_USER}@${DEPLOY_SERVER}:/project/vue-app/
+                """
             }
         }
     }
