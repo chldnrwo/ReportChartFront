@@ -15,14 +15,44 @@ pipeline {
 
         stage('Install nvm-windows and Node.js') {
             steps {
-                // nvm-windows와 Node.js 설치
                 bat '''
                     curl -Lo nvm-setup.zip https://github.com/coreybutler/nvm-windows/releases/download/${NVM_VERSION}/nvm-setup.zip
-                    powershell -NoProfile -NonInteractive -Command "Expand-Archive nvm-setup.zip -DestinationPath ."
+
+                    REM Check if the download was successful
+                    if not exist nvm-setup.zip (
+                        echo "Download failed."
+                        exit /b 1
+                    )
+
+                    REM Verify the file size is reasonable
+                    for %%A in (nvm-setup.zip) do (
+                        if %%~zA lss 10000 (
+                            echo "Downloaded file is too small, possibly corrupt."
+                            del nvm-setup.zip
+                            exit /b 1
+                        )
+                    )
+
+                    REM Extract and install nvm
+                    powershell -NoProfile -NonInteractive -Command "Expand-Archive -Path nvm-setup.zip -DestinationPath ."
+
+                    REM Verify that the nvm-setup.exe exists before proceeding
+                    if not exist nvm-setup.exe (
+                        echo "Extraction failed or nvm-setup.exe not found."
+                        exit /b 1
+                    )
+
                     powershell -NoProfile -NonInteractive -Command "Start-Process -FilePath .\\nvm-setup.exe -ArgumentList '/S' -Wait"
                     del nvm-setup.zip
+
+                    REM Set environment variables
                     setx PATH "C:\\Program Files\\nodejs;C:\\Users\\%USERNAME%\\AppData\\Roaming\\nvm;%PATH%"
                     powershell -NoProfile -NonInteractive -Command "[System.Environment]::SetEnvironmentVariable('Path', $env:Path, [System.EnvironmentVariableTarget]::Machine)"
+
+                    REM Verify nvm command
+                    powershell -NoProfile -NonInteractive -Command "Get-Command nvm"
+
+                    REM Install and use the specified Node.js version
                     powershell -NoProfile -NonInteractive -Command "nvm install ${NODE_VERSION}"
                     powershell -NoProfile -NonInteractive -Command "nvm use ${NODE_VERSION}"
                 '''
@@ -31,7 +61,6 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                // npm install 실행
                 bat '''
                     npm install
                 '''
@@ -40,7 +69,6 @@ pipeline {
 
         stage('Build') {
             steps {
-                // 프로젝트 빌드
                 bat '''
                     npm run build
                 '''
@@ -49,7 +77,6 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                // 빌드된 파일을 배포 서버로 복사
                 sshagent(['ssh-credentials-id']) {
                     bat 'scp -r dist/* root@cdcdev09:/project/vue-app/'
                 }
