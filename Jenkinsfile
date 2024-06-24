@@ -34,7 +34,7 @@ pipeline {
                     )
 
                     REM Extract and install nvm
-                    powershell -NoProfile -NonInteractive -Command "Expand-Archive -Path nvm-setup.zip -DestinationPath ."
+                    powershell -NoProfile -NonInteractive -Command "Expand-Archive -Path nvm-setup.zip -DestinationPath . -Force"
 
                     REM Verify that the nvm-setup.exe exists before proceeding
                     if not exist nvm-setup.exe (
@@ -44,6 +44,10 @@ pipeline {
 
                     REM Install nvm with timeout
                     powershell -NoProfile -NonInteractive -Command "Start-Process -FilePath .\\nvm-setup.exe -ArgumentList '/S' -Wait; Start-Sleep -Seconds 60"
+                    if errorlevel 1 (
+                        echo "Installation timed out or failed."
+                        exit /b 1
+                    )
                     del nvm-setup.zip
 
                     REM Set environment variables
