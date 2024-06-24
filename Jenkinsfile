@@ -19,21 +19,21 @@ pipeline {
                 sh '''
                     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
                     export NVM_DIR="$HOME/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
                     nvm install ${NODE_VERSION}
                     nvm use ${NODE_VERSION}
                     nvm alias default ${NODE_VERSION}
                 '''
             }
         }
-//
+
         stage('Install Dependencies') {
             steps {
+                echo 'Installing dependencies...'
                 cache(path: "${CACHE_DIR}", key: "npm-cache-${env.NODE_VERSION}") {
-                    // npm install 실행
                     sh '''
                         export NVM_DIR="$HOME/.nvm"
-                        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
                         npm install
                     '''
                 }
@@ -42,10 +42,10 @@ pipeline {
 
         stage('Build') {
             steps {
-                // 프로젝트 빌드
+                echo 'Building the project...'
                 sh '''
                     export NVM_DIR="$HOME/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
                     npm run build
                 '''
             }
@@ -53,7 +53,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                // 빌드된 파일을 배포 서버로 복사
+                echo 'Deploying the project...'
                 sshagent(['ssh-credentials-id']) {
                     sh 'scp -r dist/* root@cdcdev09:/project/vue-app/'
                 }
