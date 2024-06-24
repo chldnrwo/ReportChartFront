@@ -29,13 +29,14 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'cdcdev09', passwordVariable: 'SSH_PASSWORD', usernameVariable: 'SSH_USER')]) {
                         bat """
-                            echo y | plink -batch -pw %SSH_PASSWORD% %SSH_USER%@192.168.110.115 exit
-                            pscp -batch -pw %SSH_PASSWORD% -r dist/* %SSH_USER%@192.168.110.115:/project/vue-app/
+                            echo y | plink -batch -hostkey "ssh-ed25519 255 SHA256:1LoBJZmd4BE4yVnKyTnyCouxLvCe+owiYFVxBoGQDtg" -pw %SSH_PASSWORD% %SSH_USER%@192.168.110.115 exit
+                            pscp -batch -hostkey "ssh-ed25519 255 SHA256:1LoBJZmd4BE4yVnKyTnyCouxLvCe+owiYFVxBoGQDtg" -pw %SSH_PASSWORD% -r dist/* %SSH_USER%@192.168.110.115:/project/vue-app/
                         """
                     }
                 }
             }
         }
+
     }
 
     post {
