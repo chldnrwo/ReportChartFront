@@ -17,12 +17,12 @@ pipeline {
             steps {
                 // nvm-windows와 Node.js 설치
                 bat '''
-                    powershell -NoProfile -NonInteractive -Command "Invoke-WebRequest -Uri https://github.com/coreybutler/nvm-windows/releases/download/v${NVM_VERSION}/nvm-setup.zip -OutFile nvm-setup.zip"
+                    curl -Lo nvm-setup.zip https://github.com/coreybutler/nvm-windows/releases/download/${NVM_VERSION}/nvm-setup.zip
                     powershell -NoProfile -NonInteractive -Command "Expand-Archive nvm-setup.zip -DestinationPath ."
                     powershell -NoProfile -NonInteractive -Command "Start-Process -FilePath .\\nvm-setup.exe -ArgumentList '/S' -Wait"
                     del nvm-setup.zip
-                    setx PATH "%PATH%;C:\\Program Files\\nodejs;C:\\Users\\%USERNAME%\\AppData\\Roaming\\nvm"
-                    refreshenv
+                    setx PATH "C:\\Program Files\\nodejs;C:\\Users\\%USERNAME%\\AppData\\Roaming\\nvm;%PATH%"
+                    powershell -NoProfile -NonInteractive -Command "[System.Environment]::SetEnvironmentVariable('Path', $env:Path, [System.EnvironmentVariableTarget]::Machine)"
                     nvm install ${NODE_VERSION}
                     nvm use ${NODE_VERSION}
                 '''
