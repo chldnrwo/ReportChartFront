@@ -3,8 +3,6 @@ pipeline {
 
     environment {
         NODE_VERSION = '20.13.1'
-        DEPLOY_SERVER = '192.168.110.115' // 목적지 IP 주소
-        SSH_USER = 'root'
     }
 
     stages {
@@ -28,9 +26,13 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                bat """
-                    pscp -pw "your_password" -r dist/* ${SSH_USER}@${DEPLOY_SERVER}:/project/vue-app/
-                """
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'cdcdev09인증정보', keyFileVariable: 'SSH_KEY', passphraseVariable: '', usernameVariable: 'SSH_USER')]) {
+                        bat """
+                            pscp -i %SSH_KEY% -batch -r dist/* %SSH_USER%@192.168.110.115:/project/vue-app/
+                        """
+                    }
+                }
             }
         }
     }
