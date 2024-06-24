@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        NODE_VERSION = '20.13.1'  // 사용 중인 Node.js 버전에 맞춰 변경
+        NODE_VERSION = '20.13.1'
         CACHE_DIR = 'node_modules'
     }
 
@@ -15,37 +15,28 @@ pipeline {
 
         stage('Install Node.js') {
             steps {
-                // Node.js를 설치하거나 nvm을 사용하여 설정
-                sh '''
-                    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-                    export NVM_DIR="$HOME/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                // Node.js를 설치하거나 nvm-windows를 사용하여 설정
+                bat '''
+                    curl -o- https://raw.githubusercontent.com/coreybutler/nvm-windows/v1.1.7/install.ps1 | powershell -NoProfile -NonInteractive
                     nvm install ${NODE_VERSION}
                     nvm use ${NODE_VERSION}
-                    nvm alias default ${NODE_VERSION}
                 '''
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                echo 'Installing dependencies...'
-                cache(path: "${CACHE_DIR}", key: "npm-cache-${env.NODE_VERSION}") {
-                    sh '''
-                        export NVM_DIR="$HOME/.nvm"
-                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                        npm install
-                    '''
-                }
+                // npm install 실행
+                bat '''
+                    npm install
+                '''
             }
         }
 
         stage('Build') {
             steps {
-                echo 'Building the project...'
-                sh '''
-                    export NVM_DIR="$HOME/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                // 프로젝트 빌드
+                bat '''
                     npm run build
                 '''
             }
@@ -53,9 +44,9 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                echo 'Deploying the project...'
+                // 빌드된 파일을 배포 서버로 복사
                 sshagent(['ssh-credentials-id']) {
-                    sh 'scp -r dist/* root@cdcdev09:/project/vue-app/'
+                    bat 'scp -r dist/* root@cdcdev09:/project/vue-app/'
                 }
             }
         }
