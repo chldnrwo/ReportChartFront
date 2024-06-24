@@ -54,8 +54,8 @@ pipeline {
                     setx PATH "C:\\Program Files\\nodejs;C:\\Users\\%USERNAME%\\AppData\\Roaming\\nvm;%PATH%"
                     powershell -NoProfile -NonInteractive -Command "[System.Environment]::SetEnvironmentVariable('Path', $env:Path, [System.EnvironmentVariableTarget]::Machine)"
 
-                    REM Refresh environment variables for the current session
-                    call refreshenv
+                    REM Manually refresh environment variables for the current session
+                    set "PATH=C:\\Program Files\\nodejs;C:\\Users\\%USERNAME%\\AppData\\Roaming\\nvm;%PATH%"
 
                     REM Verify nvm command
                     nvm --version
