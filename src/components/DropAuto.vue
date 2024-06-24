@@ -96,18 +96,18 @@ export default {
     },
     methods: {
         fetchGroupNames() {
-          axios.get('http://localhost:8080/datapoints/group-names', {
-              headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json'
-              }
-          })
-          .then(response => {
-              this.groupNames = response.data;
-          })
-          .catch(error => {
-              console.error('Error fetching group names:', error);
-          });
+              axios.get('http://192.168.110.115:8080/datapoints/group-names', {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            this.groupNames = response.data;
+        })
+        .catch(error => {
+            console.error('Error fetching group names:', error);
+        });
         },
         selectGroupName(groupName) {
             this.selectedGroupName = groupName;
@@ -126,7 +126,7 @@ export default {
             this.fetchData(this.currentPage);
         },
         fetchData(page) {
-            axios.post(`http://localhost:8080/datapoints/auto/${this.selectedGroupName}/${this.selectedMonth}?page=${page}&size=${this.pageSize}`)
+            axios.post(`http://192.168.110.115:8080/datapoints/auto/${this.selectedGroupName}/${this.selectedMonth}?page=${page}&size=${this.pageSize}`)
                 .then(response => {
                     console.log('POST 요청 성공:', response.data);
                     if (response.data.data && Array.isArray(response.data.data)) {
@@ -140,7 +140,7 @@ export default {
                 });
         },
         getImagePath(chartData) {
-          return `http://localhost:3000/images/${chartData.yearMonth}/${chartData.groupName}/${chartData.tbname}.png`;
+          return `http://192.168.110.115:3002/images/${chartData.yearMonth}/${chartData.groupName}/${chartData.tbname}.png`;
         }
     }
 };

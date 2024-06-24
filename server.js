@@ -7,7 +7,7 @@ const app = express();
 const port = 3000;
 
 const corsOptions = {
-  origin: 'http://localhost:8081',
+  origin: 'http://192.168.110.115:8081',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   optionsSuccessStatus: 204
 };
@@ -61,5 +61,5 @@ app.get('/api/get-received-data', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Express server running at http://localhost:${port}/`);
+  console.log(`Express server running at http://192.168.110.115:${port}/`);
 });
