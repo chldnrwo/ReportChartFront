@@ -16,7 +16,7 @@ pipeline {
         stage('Install nvm-windows and Node.js') {
             steps {
                 bat '''
-                    curl -Lo nvm-setup.zip https://github.com/coreybutler/nvm-windows/releases/download/${NVM_VERSION}/nvm-setup.zip
+                    curl -Lo nvm-setup.zip https://github.com/coreybutler/nvm-windows/releases/download/1.1.9/nvm-setup.zip
 
                     REM Check if the download was successful
                     if not exist nvm-setup.zip (
@@ -26,7 +26,7 @@ pipeline {
 
                     REM Verify the file size is reasonable
                     for %%A in (nvm-setup.zip) do (
-                        if %%~zA lss 10000 (
+                        if %%~zA lss 100000 (
                             echo "Downloaded file is too small, possibly corrupt."
                             del nvm-setup.zip
                             exit /b 1
