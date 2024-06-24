@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         NODE_VERSION = '20.13.1'
-        CACHE_DIR = 'node_modules'
+        NVM_VERSION = '1.1.9' // 현재 nvm-windows 최신 버전
     }
 
     stages {
@@ -13,11 +13,16 @@ pipeline {
             }
         }
 
-        stage('Install Node.js') {
+        stage('Install nvm-windows and Node.js') {
             steps {
-                // Node.js를 설치하거나 nvm-windows를 사용하여 설정
+                // nvm-windows와 Node.js 설치
                 bat '''
-                    curl -o- https://raw.githubusercontent.com/coreybutler/nvm-windows/v1.1.7/install.ps1 | powershell -NoProfile -NonInteractive
+                    powershell -NoProfile -NonInteractive -Command "Invoke-WebRequest -Uri https://github.com/coreybutler/nvm-windows/releases/download/v${NVM_VERSION}/nvm-setup.zip -OutFile nvm-setup.zip"
+                    powershell -NoProfile -NonInteractive -Command "Expand-Archive nvm-setup.zip -DestinationPath ."
+                    powershell -NoProfile -NonInteractive -Command "Start-Process -FilePath .\\nvm-setup.exe -ArgumentList '/S' -Wait"
+                    del nvm-setup.zip
+                    setx PATH "%PATH%;C:\\Program Files\\nodejs;C:\\Users\\%USERNAME%\\AppData\\Roaming\\nvm"
+                    refreshenv
                     nvm install ${NODE_VERSION}
                     nvm use ${NODE_VERSION}
                 '''
