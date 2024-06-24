@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         NODE_VERSION = '20.13.1'
-        NVM_VERSION = '1.1.9' // 현재 nvm-windows 최신 버전
+        NVM_VERSION = '1.1.9'
     }
 
     stages {
@@ -54,12 +54,15 @@ pipeline {
                     setx PATH "C:\\Program Files\\nodejs;C:\\Users\\%USERNAME%\\AppData\\Roaming\\nvm;%PATH%"
                     powershell -NoProfile -NonInteractive -Command "[System.Environment]::SetEnvironmentVariable('Path', $env:Path, [System.EnvironmentVariableTarget]::Machine)"
 
+                    REM Refresh environment variables for the current session
+                    call refreshenv
+
                     REM Verify nvm command
-                    powershell -NoProfile -NonInteractive -Command "Get-Command nvm"
+                    nvm --version
 
                     REM Install and use the specified Node.js version
-                    powershell -NoProfile -NonInteractive -Command "nvm install ${NODE_VERSION}"
-                    powershell -NoProfile -NonInteractive -Command "nvm use ${NODE_VERSION}"
+                    nvm install ${NODE_VERSION}
+                    nvm use ${NODE_VERSION}
                 '''
             }
         }
