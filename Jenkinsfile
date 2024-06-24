@@ -42,10 +42,10 @@ pipeline {
                         exit /b 1
                     )
 
-                    REM Install nvm with timeout
-                    powershell -NoProfile -NonInteractive -Command "Start-Process -FilePath .\\nvm-setup.exe -ArgumentList '/S' -Wait; Start-Sleep -Seconds 60"
+                    REM Install nvm synchronously
+                    powershell -NoProfile -NonInteractive -Command "& .\\nvm-setup.exe /S"
                     if errorlevel 1 (
-                        echo "Installation timed out or failed."
+                        echo "Installation failed."
                         exit /b 1
                     )
                     del nvm-setup.zip
