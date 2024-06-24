@@ -23,8 +23,8 @@ pipeline {
                     del nvm-setup.zip
                     setx PATH "C:\\Program Files\\nodejs;C:\\Users\\%USERNAME%\\AppData\\Roaming\\nvm;%PATH%"
                     powershell -NoProfile -NonInteractive -Command "[System.Environment]::SetEnvironmentVariable('Path', $env:Path, [System.EnvironmentVariableTarget]::Machine)"
-                    nvm install ${NODE_VERSION}
-                    nvm use ${NODE_VERSION}
+                    powershell -NoProfile -NonInteractive -Command "nvm install ${NODE_VERSION}"
+                    powershell -NoProfile -NonInteractive -Command "nvm use ${NODE_VERSION}"
                 '''
             }
         }
