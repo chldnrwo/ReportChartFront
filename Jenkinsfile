@@ -29,7 +29,7 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'cdcdev09', passwordVariable: 'SSH_PASSWORD', usernameVariable: 'SSH_USER')]) {
                         bat """
-                            echo y | plink -batch -pw %SSH_PASSWORD% %SSH_USER%@192.168.110.115 -hostkey "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC4g6uRAh5ZgRo8JFGKzjP7NTPu+FbM5QfOg4V8JHkYV" exit
+                            powershell -Command "ssh-keyscan -t ed25519 192.168.110.115 >> $env:USERPROFILE/.ssh/known_hosts"
                             pscp -batch -pw %SSH_PASSWORD% -r dist/* %SSH_USER%@192.168.110.115:/project/vue-app/
                         """
                     }
