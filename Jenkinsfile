@@ -42,7 +42,8 @@ pipeline {
                         exit /b 1
                     )
 
-                    powershell -NoProfile -NonInteractive -Command "Start-Process -FilePath .\\nvm-setup.exe -ArgumentList '/S' -Wait"
+                    REM Install nvm with timeout
+                    powershell -NoProfile -NonInteractive -Command "Start-Process -FilePath .\\nvm-setup.exe -ArgumentList '/S' -Wait; Start-Sleep -Seconds 60"
                     del nvm-setup.zip
 
                     REM Set environment variables
