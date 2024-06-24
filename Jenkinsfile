@@ -27,9 +27,9 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'cdcdev09', passwordVariable: 'SSH_PASSWORD', usernameVariable: 'SSH_USER')]) {
+                    withCredentials([usernamePassword(credentialsId: 'cdcdev09인증정보', passwordVariable: 'SSH_PASSWORD', usernameVariable: 'SSH_USER')]) {
                         bat """
-                            pscp -pw %SSH_PASSWORD% -r dist/* %SSH_USER%@192.168.110.115:/project/vue-app/
+                            pscp -batch -pw %SSH_PASSWORD% -r dist/* %SSH_USER%@192.168.110.115:/project/vue-app/
                         """
                     }
                 }
