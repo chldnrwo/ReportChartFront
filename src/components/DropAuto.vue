@@ -3,7 +3,7 @@
     <div>
       <div class="dropdown">
         <button class="btn btn-primary custom-btn dropdown-toggle" type="button" id="dropdownGroupButton" data-bs-toggle="dropdown" aria-expanded="false">
-          기관 이름 웹훅테스트7
+          기관 이름 웹훅테스트8
         </button>
         <ul class="dropdown-menu custom-dropdown-menu" aria-labelledby="dropdownGroupButton">
           <li v-for="group in groupNames" :key="group.groupName">
